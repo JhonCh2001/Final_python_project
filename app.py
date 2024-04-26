@@ -3,6 +3,8 @@ import streamlit as st
 import src.datos as datos
 import src.graficos as graficos
 import src.util as util
+import src.reporte_pdf as reporte_pdf
+import src.reporte_excel as reporte_excel
 
 st.title('Análisis consultas pacientes')
 
@@ -35,5 +37,27 @@ if archivo_base:
                 mes = util.num_mes(option_mes)
                 ultimo_mes = util.num_mes(option_list[-2])
                 graficos.mostrar_grafico(mes,ultimo_mes)
+
+                placeholder = st.empty()
+                placeholder.text("Generando reporte en PDF")
+                pdf = reporte_pdf.crear_reporte(st.session_state.df,mes)
+                placeholder.empty()
+
+                html = reporte_pdf.create_download_link(pdf.output(dest="S").encode("latin-1"), f"Reporte_{option_mes}")
+                st.markdown(html, unsafe_allow_html=True)
+
+                placeholder = st.empty()
+                placeholder.text("Generando reporte en excel.")
+                pdf = reporte_pdf.crear_reporte(st.session_state.df,mes)
+                placeholder.empty()
+
+                wb = reporte_excel.crear_reporte_excel(st.session_state.df)
+                excel_file = reporte_excel.descargar_excel(wb)
+                st.download_button(
+                    label="Descargar Reporte en Excel",
+                    data=excel_file,
+                    file_name=f"Reporte_total.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
     except:
         st.warning('Revise la estructura del archivo.', icon = '⭕')
